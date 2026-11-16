@@ -1,47 +1,23 @@
-# Component Name
+# Archive Manager
 
-Component description.
+Archive Manager is a SigmaOS component providing a functional domain model for `archive-manager2` with validated state, deterministic storage, and typed errors.
 
-## Overview
+## Description
 
-This component provides $tool_name compatibility for SigmaOS.
+Archive Manager archive manager compatibility layer for SigmaOS
 
-## Features
+## Domain model
 
-- Feature 1
-- Feature 2
+- `ArchiveManager` — domain entity
 
-## Usage
+## API
 
-```rust
-use sigmaos_system_util::SystemUtil;
-
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let mut util = SystemUtil::new()?;
-    util.init().await?;
-    Ok(())
-}
-```
-
-## Building
-
-```bash
-cargo build --release
-```
+- `new()`
 
 ## Testing
 
-```bash
+```sh
 cargo test
 ```
 
-## License
-
-MIT License - see LICENSE file for details
-
-## Inspiration
-
-- $tool_name utility
-- system tools
-- desktop environment
+Tests are deterministic, isolated, and self-validating.
