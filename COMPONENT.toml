@@ -3,7 +3,7 @@ name = "SigmaOS-archive-manager2"
 tier = 2
 stability = "scaffold"
 language = "rust"
-description = "archive-manager2 component"
+description = "Archive Manager archive manager compatibility layer for SigmaOS"
 upstream = []
 
 [contract]
