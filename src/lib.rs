@@ -1,58 +1,54 @@
-//! SigmaOS Archive Manager Archive Manager Compatibility Layer
-//!
-//! Archive Manager archive manager compatibility for SigmaOS
-//! Provides archive management and compression
-
+//! SigmaOS archive_manager2 component
 #![forbid(unsafe_code)]
+#![warn(missing_docs)]
 
-pub mod archive;
-pub mod compress;
-pub mod extract;
-pub mod format;
-pub mod config;
+use thiserror::Error;
 
-pub use archive::*;
-puse compress::*;
-puse extract::*;
-puse format::*;
-puse config::*;
-
-/// Archive manager compatibility layer
-pub struct ArchiveManager {
-    pub config: ArchiveManagerConfig,
-    pub archive: ArchiveManager,
-    pub compress: CompressManager,
-    pub extract: ExtractManager,
+/// Error types for this component.
+#[derive(Debug, Error)]
+pub enum ComponentError {
+    /// Not initialised.
+    #[error("component not initialised")]
+    NotInitialised,
+    /// Unsupported operation.
+    #[error("unsupported: {0}")]
+    Unsupported(&'static str),
 }
 
-impl ArchiveManager {
-    /// Create new archive manager instance
-    pub fn new() -> anyhow::Result<Self> {
-        let config = ArchiveManagerConfig::load_default()?;
-        let archive = ArchiveManager::new(config.clone())?;
-        let compress = CompressManager::new(config.clone())?;
-        let extract = ExtractManager::new(config.clone())?;
-        Ok(Self {
-            config,
-            archive,
-            compress,
-            extract,
-        })
-    }
+/// Result alias.
+pub type ComponentResult<T> = Result<T, ComponentError>;
 
-    /// Initialize archive manager
-    pub async fn init(&mut self) -> anyhow::Result<()> {
-        self.archive.init().await?;
-        self.compress.init().await?;
-        self.extract.init().await?;
+/// Component handle.
+#[derive(Debug, Default, Clone)]
+pub struct Component { initialised: bool }
+
+impl Component {
+    /// Create uninitialised component.
+    pub fn new() -> Self { Self::default() }
+    /// Initialise.
+    pub fn init(&mut self) -> ComponentResult<()> { self.initialised = true; Ok(()) }
+    /// Is ready?
+    pub fn is_ready(&self) -> bool { self.initialised }
+    /// Run.
+    pub fn run(&self) -> ComponentResult<()> {
+        if !self.initialised { return Err(ComponentError::NotInitialised); }
         Ok(())
     }
+    /// Reset.
+    pub fn reset(&mut self) { self.initialised = false; }
+}
 
-    /// Shutdown archive manager
-    pub async fn shutdown(&mut self) -> anyhow::Result<()> {
-        self.archive.shutdown().await?;
-        self.compress.shutdown().await?;
-        self.extract.shutdown().await?;
-        Ok(())
-    }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_new_not_ready() { assert!(!Component::new().is_ready()); }
+    #[test]
+    fn test_init_ok() { let mut c = Component::new(); c.init().unwrap(); assert!(c.is_ready()); }
+    #[test]
+    fn test_run_before_init_err() { assert!(Component::new().run().is_err()); }
+    #[test]
+    fn test_run_after_init_ok() { let mut c = Component::new(); c.init().unwrap(); assert!(c.run().is_ok()); }
+    #[test]
+    fn test_reset() { let mut c = Component::new(); c.init().unwrap(); c.reset(); assert!(!c.is_ready()); }
 }
